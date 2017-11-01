@@ -1,0 +1,230 @@
+This file has the commands executed and its corresponding output for all the the 10 commands given in Assignmnet2.
+==================================================================================================================
+It uses the dataset file Student.txt  for first eight commands and emp_det.txt for the rest two.
+================================================================================================
+
+strecord = load '/home/acadgild/Student.txt' using PigStorage(',') as (id:int,fname:chararray,lname:chararray,address:chararray,city:chararray,zip:int,mob:long,sub1:int,sub2:int,sub3:int);
+
+
+input file stored in PiG
+
+2017-07-18 17:28:19,046 [main] INFO  org.apache.pig.backend.hadoop.executionengine.util.MapRedUtil - Total input paths to process : 1
+(101,Leela,Kamath,Oscar Apt,Bangalore,560092,9880282668,100,98,56)
+(102,Sheela,Shenoy,Krishna Diamond,Bangalore,560092,7867566534,76,45,89)
+(108,Vidhya,Prabhu,Prestige Wellington,Bangalore,560091,9880141555,78,67,56)
+(110,Veena,Sastry,Samruddi apt,Bangalore,560067,8123145687,43,45,54)
+(103,Suma,Acharya,Brigade Gateway,Bangalore,560078,9880141590,67,54,67)
+(111,Geetha,Bhat,Hoysala apt,Bangalore,560076,9880123456,56,45,38)
+(121,Kalpana,Bhatia,Shristi Nilaya,Pune,450007,9883167890,89,56,43)
+(129,Nidhi,Gupta,Oscar Apt,Bangalore,560092,9880456789,78,67,56)
+
+
+1.CONCAT
+============
+//The below command iterates and concatenates two fields first name and lastaname an d adds space in between in each record of the strecord.
+
+grunt> stconcat = foreach strecord generate CONCAT(fname,' ',lname),id;
+grunt> dump stconcat ;
+
+2017-07-18 18:28:35,793 [main] INFO  org.apache.pig.backend.hadoop.executionengine.util.MapRedUtil - Total input paths to process : 1
+(Leela Kamath,101)
+(Sheela Shenoy,102)
+(Vidhya Prabhu,108)
+(Veena Sastry,110)
+(Suma Acharya,103)
+(Geetha Bhat,111)
+(Kalpana Bhatia,121)
+(Nidhi Gupta,129)
+(,)
+
+
+2 TOKENIZE
+===========
+//This command seperates the address field( with space) into two separate field for each of the record in strecord.
+ 
+grunt> sttoken = foreach strecord generate TOKENIZE(address);
+grunt> dump sttoken;
+2017-07-18 18:34:09,650 [main] INFO  org.apache.hadoop.mapreduce.lib.input.FileInputFormat - Total input paths to process : 1
+2017-07-18 18:34:09,650 [main] INFO  org.apache.pig.backend.hadoop.executionengine.util.MapRedUtil - Total input paths to process : 1
+({(Oscar),(Apt)})
+({(Krishna),(Diamond)})
+({(Prestige),(Wellington)})
+({(Samruddi),(apt)})
+({(Brigade),(Gateway)})
+({(Hoysala),(apt)})
+({(Shristi),(Nilaya)})
+({(Oscar),(Apt)})
+()
+
+
+3.SUM
+// In the first step performs group all and generates STGROUP.Then finds the sum of marks scored by all the students in SUB1.
+grunt>stgroup = group strecord all;
+inputFormat - Total input paths to process : 1
+2017-07-18 20:51:19,156 [main] INFO  org.apache.pig.backend.hadoop.executionengine.util.MapRedUtil - Total input paths to process : 1
+2017-07-18 21:31:23,356 [main] INFO  org.apache.pig.backend.hadoop.executionengine.util.MapRedUtil - Total input paths to process : 1
+(all,{(,,,,,,,,,),(129,Nidhi,Gupta,Oscar Apt,Bangalore,560092,9880456789,78,67,56),(121,Kalpana,Bhatia,Shristi Nilaya,Pune,450007,9883167890,89,56,43),(111,Geetha,Bhat,Hoysala apt,Bangalore,560076,9880123456,56,45,38),(103,Suma,Acharya,Brigade Gateway,Bangalore,560078,9880141590,67,54,67),(110,Veena,Sastry,Samruddi apt,Bangalore,560067,8123145687,43,45,54),(108,Vidhya,Prabhu,Prestige Wellington,Bangalore,560091,9880141555,78,67,56),(102,Sheela,Shenoy,Krishna Diamond,Bangalore,560092,7867566534,76,45,89),(101,Leela,Kamath,Oscar Apt,Bangalore,560092,9880282668,100,98,56)})
+
+
+grunt> stsum = foreach stgroup generate (strecord.id,strecord.sub1),SUM(strecord.sub1);
+grunt> dump stsum;
+
+(({(),(129),(121),(111),(103),(110),(108),(102),(101)},{(),(78),(89),(56),(67),(43),(78),(76),(100)}),587)
+
+
+4.MAX
+======
+// Uses the stgroup generated in the above command and selects each student id and marks along with Maximum of all the marks scored. 
+grunt> stmax = foreach stgroup generate (strecord.id,strecord.sub1),MAX(strecord.sub1);
+grunt> dump stmax
+
+2017-07-18 21:48:13,484 [main] INFO  org.apache.pig.backend.hadoop.executionengine.util.MapRedUtil - Total input paths to process : 1
+(({(),(129),(121),(111),(103),(110),(108),(102),(101)},{(),(78),(89),(56),(67),(43),(78),(76),(100)}),100)
+
+5.MIN
+====
+//Uses the stgroup generated question3,in the above command and selects each student id and marks along with Minimum of marks scored.
+grunt> stmin = foreach stgroup generate (strecord.id,strecord.sub1),MIN(strecord.sub1);
+grunt> dump stmin;
+2017-07-18 21:51:59,186 [main] INFO  org.apache.hadoop.mapreduce.lib.input.FileInputFormat - Total input paths to process : 1
+2017-07-18 21:51:59,186 [main] INFO  org.apache.pig.backend.hadoop.executionengine.util.MapRedUtil - Total input paths to process : 1
+(({(),(129),(121),(111),(103),(110),(108),(102),(101)},{(),(78),(89),(56),(67),(43),(78),(76),(100)}),43)
+
+
+
+6.Limit(getting top 3 student records from "strecord")
+=======
+grunt> stlimit = limit strecord 3;
+grunt> dump stlimit;
+2017-07-19 20:49:35,899 [main] INFO  org.apache.pig.tools.pigstats.ScriptState - Pig features used in the script: LIMIT
+
+
+2017-07-19 20:49:36,166 [main] INFO  org.apache.pig.backend.hadoop.executionengine.util.MapRedUtil - Total input paths to process : 1
+(101,Leela,Kamath,Oscar Apt,Bangalore,560092,9880282668,100,98,56)
+(102,Sheela,Shenoy,Krishna Diamond,Bangalore,560092,7867566534,76,45,89)
+(108,Vidhya,Prabhu,Prestige Wellington,Bangalore,560091,9880141555,78,67,56)
+grunt> [acadgild@localhost ~]$
+
+
+
+7.store(storing the "strecord" relation into local file system.(/home/acadgild/student-det')
+=======
+
+grunt> store strecord into '/home/acadgild/student-det' using PigStorage(',');
+
+
+Success!
+
+Job Stats (time in seconds):
+JobId	Maps	Reduces	MaxMapTime	MinMapTime	AvgMapTime	MedianMapTime	MaxReduceTime	MinReduceTime	AvgReduceTime	MedianReducetime	Alias	Feature	Outputs
+job_local1383728393_0002	1	0	n/a	n/a	n/a	n/a	0	0	0	0	strecord	MAP_ONLY	/home/acadgild/student-det,
+
+Input(s):
+Successfully read 9 records from: "/home/acadgild/Student.txt"
+
+Output(s):
+Successfully stored 9 records in: "/home/acadgild/student-det"
+
+Counters:
+Total records written : 9
+Total bytes written : 0
+
+
+
+
+ 
+8.DISTINCT(file with duplicate record is first uploaded. Later the duplicate records are removed using "distinct" command.
+=================
+stdup = load '/home/acadgild/Student-duprec.txt' using PigStorage(',') as (id:int,fname:chararray,lname:chararray,address:chararray,city:chararray,zip:int,mob:long,sub1:int,sub2:int,sub3:int);
+2017-07-19 21:56:29,537 [main] INFO  org.apache.pig.backend.hadoop.executionengine.util.MapRedUtil - Total input paths to process : 1
+grunt> dump stdup;
+(101,Leela,Kamath,Oscar Apt,Bangalore,560092,9880282668,100,98,56)
+(102,Sheela,Shenoy,Krishna Diamond,Bangalore,560092,7867566534,76,45,89)
+(102,Sheela,Shenoy,Krishna Diamond,Bangalore,560092,7867566534,76,45,89)
+(108,Vidhya,Prabhu,Prestige Wellington,Bangalore,560091,9880141555,78,67,56)
+(110,Veena,Sastry,Samruddi apt,Bangalore,560067,8123145687,43,45,54)
+(103,Suma,Acharya,Brigade Gateway,Bangalore,560078,9880141590,67,54,67)
+(103,Suma,Acharya,Brigade Gateway,Bangalore,560078,9880141590,67,54,67)
+
+
+grunt> stdistinct = distinct stdup;
+grunt> dump stdistinct;
+
+2017-07-19 22:04:46,282 [main] INFO  org.apache.pig.backend.hadoop.executionengine.util.MapRedUtil - Total input paths to process : 1
+(101,Leela,Kamath,Oscar Apt,Bangalore,560092,9880282668,100,98,56)
+(102,Sheela,Shenoy,Krishna Diamond,Bangalore,560092,7867566534,76,45,89)
+(103,Suma,Acharya,Brigade Gateway,Bangalore,560078,9880141590,67,54,67)
+(108,Vidhya,Prabhu,Prestige Wellington,Bangalore,560091,9880141555,78,67,56)
+(110,Veena,Sastry,Samruddi apt,Bangalore,560067,8123145687,43,45,54)
+(,,,,,,,,,)
+
+9.Flatten
+==========
+ empdata =load '/home/acadgild/Desktop/emp.txt' using PigStorage(',') as (grade:chararray,id:chararray,name:chararray,age:int);
+
+agegrp = group empdata by age;
+
+
+2017-07-25 16:43:32,200 [main] INFO  org.apache.pig.backend.hadoop.executionengine.util.MapRedUtil - Total input paths to process : 1
+
+(23,{(GR2,BCA,Sheena,23)})
+(25,{(GR1,DCA,Shiva,25),(GR3,CAB,Kiran,25),(GR1,ABC,Meena,25)})
+(,{(,,,),(,,,)})
+
+grunt> empflat = foreach empgrp generate FLATTEN(empdata);
+grunt> dump empflat;
+
+2017-07-25 16:44:38,104 [main] INFO  org.apache.pig.backend.hadoop.executionengine.util.MapRedUtil - Total input paths to process : 1
+(GR2,BCA,Sheena,23)
+(GR1,DCA,Shiva,25)
+(GR3,CAB,Kiran,25)
+(GR1,ABC,Meena,25)
+(,,,)
+(,,,)
+
+
+10.isempty(here the cogroup is created based on age using empdet and empsal relation. Then the result is filtered by checking empty empdet record in a tuple.
+
+==========
+empdet =load '/home/acadgild/Desktop/Datafiles/emp.txt' using PigStorage(',') as (grade:chararray,id:chararray,name:chararray,age:int);
+
+(GR1,ABC,Meena,25)
+(GR2,BCA,Sheena,23)
+(GR3,CAB,Kiran,25)
+(GR1,DCA,Shiva,25)
+(,,,,)
+(,,,,)
+
+empsal = load '/home/acadgild/Desktop/Datafiles/empsal.txt' using PigStorage(',') as (grade:chararray,id:chararray,name:chararray,sal:int); 
+
+(GR1,ABC,Meena,25,25000)
+(GR2,BCA,Sheena,23,30000)
+(GR3,CAB,Kiran,25,35000)
+(GR1,DCA,Sheela,30,25000)
+(,,,,)
+(,,,,)
+
+
+
+
+grunt> empcgrp = cogroup empdet by age, empsal by age;
+(23,{(GR2,BCA,Sheena,23)},{(GR2,BCA,Sheena,23,30000)})
+(25,{(GR1,DCA,Shiva,25),(GR3,CAB,Kiran,25),(GR1,ABC,Meena,25)},{(GR3,CAB,Kiran,25,35000),(GR1,ABC,Meena,25,25000)})
+(30,{},{(GR1,DCA,Sheela,30,25000)})
+(,{(,,,),(,,,)},{})
+(,{},{(,,,,),(,,,,)})
+
+
+
+grunt> empempty = filter empcgrp by IsEmpty(empdet);
+grunt> dump empempty;
+(30,{},{(GR1,DCA,Sheela,30,25000)})
+(,{},{(,,,,),(,,,,)})
+
+
+
+
+
+
+
+

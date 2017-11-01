@@ -1,0 +1,9 @@
+101,Leela,Kamath,Oscar Apt,Bangalore,560092,9880282668,100,98,56
+102,Sheela,Shenoy,Krishna Diamond,Bangalore,560092,7867566534,76,45,89
+102,Sheela,Shenoy,Krishna Diamond,Bangalore,560092,7867566534,76,45,89
+108,Vidhya,Prabhu,Prestige Wellington,Bangalore,560091,9880141555,78,67,56
+110,Veena,Sastry,Samruddi apt,Bangalore,560067,8123145687,43,45,54
+103,Suma,Acharya,Brigade Gateway,Bangalore,560078,9880141590,67,54,67
+103,Suma,Acharya,Brigade Gateway,Bangalore,560078,9880141590,67,54,67
+
+
